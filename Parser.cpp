@@ -57,7 +57,7 @@ struct formatter : karma::grammar<It, Description(), karma::ascii::space_type>
     using karma::uint_;
     
     start =
-      lit("Nonogram{") <<
+      lit("Nonogram {") <<
       line_vector(std::string("Rows")) <<
       line_vector(std::string("Columns")) <<
       lit('}');
