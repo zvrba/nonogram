@@ -72,10 +72,22 @@ struct formatter : karma::grammar<It, Description(), karma::ascii::space_type>
   karma::rule<It, Line(), qi::ascii::space_type> line;
 };
 
+std::ostream& operator<<(std::ostream& os, const Description& d)
+{
+  using namespace boost::spirit;
+  using ascii::space;
+  
+  static formatter<ostream_iterator> formatter;
+  
+  os << karma::format_delimited(formatter, space, d);
+  return os;
+}
+
 std::istream& operator>>(std::istream& is, Description &d)
 {
   using namespace boost::spirit;
   using ascii::space;
+
   static parser<istream_iterator> parser;
   
   boost::io::ios_flags_saver flags(is);

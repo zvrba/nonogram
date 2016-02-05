@@ -13,6 +13,7 @@ struct Description
   LineVector columns;
 };
 
+std::ostream& operator<<(std::ostream&, const Description&);
 std::istream& operator>>(std::istream&, Description&);
 
 }
