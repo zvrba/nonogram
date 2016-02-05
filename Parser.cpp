@@ -45,7 +45,7 @@ struct parser : qi::grammar<It, Description(), qi::ascii::space_type>
   qi::rule<It, Line(), qi::ascii::space_type> line;
 };
 
-Description parse(std::istream& is)
+std::istream& operator>>(std::istream& is, Description &d)
 {
   using namespace boost::spirit;
   using ascii::space;
@@ -53,8 +53,9 @@ Description parse(std::istream& is)
   
   boost::io::ios_flags_saver flags(is);
   Description tmp;
-  is >> std::noskipws >> qi::phrase_match(parser, space, tmp);
-  return tmp;
+  if (is >> std::noskipws >> qi::phrase_match(parser, space, tmp))
+    d = std::move(tmp);
+  return is;
 }
 
 }
