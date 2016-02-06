@@ -1,26 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+#include <iostream>
+#include <fstream>
+#include "Representation.h"
 
-/* 
- * File:   main.cpp
- * Author: zvrba
- *
- * Created on February 5, 2016, 5:24 PM
- */
-
-#include <cstdlib>
-
-using namespace std;
-
-/*
- * 
- */
 int main(int argc, char** argv)
 {
-
+  using namespace nonogram;
+  std::ifstream ifs("inputs/1.txt");
+  Description d;
+  
+  if (ifs >> d) {
+    std::cout << "W: " << d.width() << " H: " << d.height() << "\n";
+    std::cout << d << "\n";
+  }
   return 0;
 }
 
