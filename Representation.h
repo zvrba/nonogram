@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include <boost/coroutine2/all.hpp>
 
 namespace nonogram
 {
@@ -19,6 +18,8 @@ struct Description
 
 std::ostream& operator<<(std::ostream&, const Description&);
 std::istream& operator>>(std::istream&, Description&);
+
+LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell);
 
 /////////////////////////////////////////////////////////////////////////////
 

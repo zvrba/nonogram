@@ -97,4 +97,73 @@ std::istream& operator>>(std::istream& is, Description &d)
   return is;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+class LineEnumeratorState
+{
+  const Line& _description;
+  const Line _max;
+  Line _current;
+  
+  static Line calculateMaximums(const Line& description, size_t size);
+  
+  bool reset(size_t startIndex);
+
+public:
+  LineEnumeratorState(const Line& description, size_t size, size_t lowestCell) :
+    _description(description),
+    _max(calculateMaximums(_description, size)),
+    _current(_description.size())
+  {
+    _current[0] = lowestCell;
+    reset(0);
+  }
+
+  void next(size_t i, LineVector& result);
+};
+
+Line LineEnumeratorState::calculateMaximums(const Line& description, size_t size)
+{
+  size_t count = description.size();
+  Line maximums(count);
+
+  while (count--) {
+    if (description[count] > size)
+      throw std::runtime_error("invalid constraint; line too short");
+    if ((maximums[count] = size - description[count]) > 0)
+      size = maximums[count] - 1;
+  }
+  return maximums;
+}
+
+bool LineEnumeratorState::reset(size_t startIndex)
+{
+  for (size_t i = startIndex+1; i < _description.size(); ++i)
+  if ((_current[i] = _current[i-1] + _description[i-1] + 1) > _max[i])
+    return false;
+  return true;
+}
+
+void LineEnumeratorState::next(size_t i, LineVector& result)
+{
+  if (i == _description.size()) {
+    result.push_back(_current);
+    return;
+  }
+  
+  while (_current[i] <= _max[i]) {
+    next(i+1, result);
+    ++_current[i];
+    reset(i);
+  }
+}
+
+LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell)
+{
+  LineVector result;
+  LineEnumeratorState state(description, size, lowestCell);
+  state.next(0, result);
+  return result;
+}
+
 }

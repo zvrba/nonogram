@@ -5,13 +5,15 @@
 int main(int argc, char** argv)
 {
   using namespace nonogram;
-  std::ifstream ifs("inputs/1.txt");
-  Description d;
   
-  if (ifs >> d) {
-    std::cout << "W: " << d.width() << " H: " << d.height() << "\n";
-    std::cout << d << "\n";
+  Line line{1,1};
+  auto e = enumerateLine(line, 5, 0);
+  
+  for (const auto& l : e) {
+    for (auto v : l) std::cout << v << ' ';
+    std::cout << '\n';
   }
+  
   return 0;
 }
 
