@@ -81,9 +81,13 @@ class RowAgent
   };
   
 public:
+  using signal_type = signals::signal_type<
+          bool(size_t),
+          signals::keywords::combiner_type<and_combiner>,
+          signals::keywords::mutex_type<signals::dummy_mutex>>::type;
+  
   RowAgent(Grid& grid, const LineVector& lv);
-  void run();
-  // TODO! Disable mutex!!
+  void next();
   signals::signal<bool(size_t), and_combiner> columnChanged;
 };
 
