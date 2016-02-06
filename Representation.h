@@ -21,22 +21,4 @@ std::istream& operator>>(std::istream&, Description&);
 
 LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell);
 
-/////////////////////////////////////////////////////////////////////////////
-
-class Grid
-{
-  using Cells = std::vector<int>;
-  
-  const Description& _description;
-  Cells _cells;
-  
-public:
-  Grid(const Description& d) : _description(d), _cells(d.width()*d.height())
-  { }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-
-
 }
