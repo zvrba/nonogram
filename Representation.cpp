@@ -1,3 +1,6 @@
+#include <iterator>
+#include <boost/range/adaptors.hpp>
+#include <boost/range/algorithm.hpp>
 #include <boost/io/ios_state.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_match.hpp>
@@ -8,6 +11,8 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/fusion/adapted/std_tuple.hpp>
+#include <boost/fusion/include/std_tuple.hpp>
 #include "Representation.h"
 
 // Must be in global scope.
@@ -106,9 +111,8 @@ struct LineColoringFormatter : karma::grammar<It, LineColoring(), karma::ascii::
 {
   LineColoringFormatter() : LineColoringFormatter::base_type(start)
   {
-    using namespace karma::labels;
     start = lit("Coloring") << lit('{') << *block << lit('}');
-    block = lit('[') << _1 << _2 << lit(']');
+    block = lit('[') << ulong_ << lit('-') << ulong_ << lit(')');
   }
   
   karma::rule<It, LineColoring(), karma::ascii::space_type> start;
@@ -121,7 +125,7 @@ std::ostream& operator<<(std::ostream& os, const LineColoring& coloring)
   using ascii::space;
   
   static LineColoringFormatter<ostream_iterator> formatter;
-  
+
   os << karma::format_delimited(formatter, space, coloring);
   return os;
 }
@@ -148,7 +152,7 @@ public:
     reset(0);
   }
 
-  void next(size_t i, LineVector& result);
+  void next(size_t i, std::vector<LineColoring>& result);
 };
 
 LineDescription LineEnumeratorState::calculateMaximums(const LineDescription& description, size_t size)
@@ -173,10 +177,16 @@ bool LineEnumeratorState::reset(size_t startIndex)
   return true;
 }
 
-void LineEnumeratorState::next(size_t i, LineVector& result)
+void LineEnumeratorState::next(size_t i, std::vector<LineColoring>& result)
 {
+  using boost::transform;
+  using boost::adaptors::indexed;
+  
   if (i == _description.size()) {
-    result.push_back(_current);
+    LineColoring coloring;
+    transform(_current | indexed(), std::inserter(coloring, coloring.end()),
+      [this](const auto& e) { return Block(e.value(), _description[e.index()]); });
+    result.push_back(coloring);
     return;
   }
   
@@ -189,7 +199,7 @@ void LineEnumeratorState::next(size_t i, LineVector& result)
 
 std::vector<LineColoring> enumerateColorings(const LineDescription& description, size_t size)
 {
-  LineVector result;
+  std::vector<LineColoring> result;
   LineEnumeratorState state(description, size, 0);
   state.next(0, result);
   return result;
