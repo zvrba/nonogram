@@ -24,9 +24,9 @@ std::istream& operator>>(std::istream&, Description&);
 //! Block is a consecutive line of colored cells.  The tuple is [start,end) range.
 //! In a valid coloring, length must match the corresponding length from description.
 using Block = std::tuple<size_t, size_t>;
+using LineColoring = std::vector<Block>;
 
-//! Returns a list of all valid colorings of a line.  Each element gives the
-//! starting position of a cell block of length corresponding to the description.
+//! Returns a list of all valid colorings of a line; the coloring is described as a vector of blocks.
 LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell);
 
 }

@@ -62,7 +62,7 @@ class ColumnAgent
   std::vector<Block> _blocks;
 
 public:
-  Agent(const Line& description, size_t lineSize) :
+  ColumnAgent(const Line& description, size_t lineSize) :
     _description(description), _lineSize(lineSize)
   { }
 
