@@ -57,12 +57,12 @@ private:
 //! Verifies whether RowAgent's placement of the cell is consistent with column description.
 class ColumnAgent
 {
-  const Line& _description;
+  const LineDescription& _description;
   const size_t _lineSize;
   std::vector<Block> _blocks;
 
 public:
-  ColumnAgent(const Line& description, size_t lineSize) :
+  ColumnAgent(const LineDescription& description, size_t lineSize) :
     _description(description), _lineSize(lineSize)
   { }
 

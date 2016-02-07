@@ -5,14 +5,13 @@
 
 namespace nonogram
 {
-typedef std::vector<unsigned> Line;   //! Description of a single row or column
-typedef std::vector<Line> LineVector;
+typedef std::vector<unsigned> LineDescription;   //! Description of a single row or column
 
 //! This is input to the solver.
 struct Description
 {
-  LineVector rows;
-  LineVector columns;
+  std::vector<LineDescription> rows;
+  std::vector<LineDescription> columns;
   
   size_t width() const { return columns.size(); }
   size_t height() const { return rows.size(); }
@@ -26,7 +25,9 @@ std::istream& operator>>(std::istream&, Description&);
 using Block = std::tuple<size_t, size_t>;
 using LineColoring = std::vector<Block>;
 
+std::ostream& operator<<(std::ostream& os, const LineColoring&);
+
 //! Returns a list of all valid colorings of a line; the coloring is described as a vector of blocks.
-LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell);
+std::vector<LineColoring> enumerateColorings(const LineDescription& description, size_t size);
 
 }

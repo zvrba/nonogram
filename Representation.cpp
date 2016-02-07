@@ -13,19 +13,21 @@
 // Must be in global scope.
 BOOST_FUSION_ADAPT_STRUCT(
   nonogram::Description,
-  (nonogram::LineVector, rows)
-  (nonogram::LineVector, columns)
+  (std::vector<nonogram::LineDescription>, rows)
+  (std::vector<nonogram::LineDescription>, columns)
 );
 
 namespace nonogram
 {
 
+using LineVector = std::vector<LineDescription>;
+
 using namespace boost::spirit;
 
 template<typename It>
-struct parser : qi::grammar<It, Description(), qi::ascii::space_type>
+struct DescriptionParser : qi::grammar<It, Description(), qi::ascii::space_type>
 {
-  parser() : parser::base_type(start)
+  DescriptionParser() : DescriptionParser::base_type(start)
   {
     using namespace qi::labels;
     using qi::lit;
@@ -44,13 +46,13 @@ struct parser : qi::grammar<It, Description(), qi::ascii::space_type>
   
   qi::rule<It, Description(), qi::ascii::space_type> start;
   qi::rule<It, LineVector(std::string), qi::ascii::space_type> line_vector;
-  qi::rule<It, Line(), qi::ascii::space_type> line;
+  qi::rule<It, LineDescription(), qi::ascii::space_type> line;
 };
 
 template<typename It>
-struct formatter : karma::grammar<It, Description(), karma::ascii::space_type>
+struct DescriptionFormatter : karma::grammar<It, Description(), karma::ascii::space_type>
 {
-  formatter() : formatter::base_type(start)
+  DescriptionFormatter() : DescriptionFormatter::base_type(start)
   {
     using namespace karma::labels;
     using karma::lit;
@@ -69,7 +71,7 @@ struct formatter : karma::grammar<It, Description(), karma::ascii::space_type>
   
   karma::rule<It, Description(), karma::ascii::space_type> start;
   karma::rule<It, LineVector(std::string), qi::ascii::space_type> line_vector;
-  karma::rule<It, Line(), qi::ascii::space_type> line;
+  karma::rule<It, LineDescription(), qi::ascii::space_type> line;
 };
 
 std::ostream& operator<<(std::ostream& os, const Description& d)
@@ -77,7 +79,7 @@ std::ostream& operator<<(std::ostream& os, const Description& d)
   using namespace boost::spirit;
   using ascii::space;
   
-  static formatter<ostream_iterator> formatter;
+  static DescriptionFormatter<ostream_iterator> formatter;
   
   os << karma::format_delimited(formatter, space, d);
   return os;
@@ -88,7 +90,7 @@ std::istream& operator>>(std::istream& is, Description &d)
   using namespace boost::spirit;
   using ascii::space;
 
-  static parser<istream_iterator> parser;
+  static DescriptionParser<istream_iterator> parser;
   
   boost::io::ios_flags_saver flags(is);
   Description tmp;
@@ -99,18 +101,45 @@ std::istream& operator>>(std::istream& is, Description &d)
 
 /////////////////////////////////////////////////////////////////////////////
 
+template<typename It>
+struct LineColoringFormatter : karma::grammar<It, LineColoring(), karma::ascii::space_type>
+{
+  LineColoringFormatter() : LineColoringFormatter::base_type(start)
+  {
+    using namespace karma::labels;
+    start = lit("Coloring") << lit('{') << *block << lit('}');
+    block = lit('[') << _1 << _2 << lit(']');
+  }
+  
+  karma::rule<It, LineColoring(), karma::ascii::space_type> start;
+  karma::rule<It, Block(), karma::ascii::space_type> block;
+};
+
+std::ostream& operator<<(std::ostream& os, const LineColoring& coloring)
+{
+  using namespace boost::spirit;
+  using ascii::space;
+  
+  static LineColoringFormatter<ostream_iterator> formatter;
+  
+  os << karma::format_delimited(formatter, space, coloring);
+  return os;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 class LineEnumeratorState
 {
-  const Line& _description;
-  const Line _max;
-  Line _current;
+  const LineDescription& _description;
+  const LineDescription _max;
+  LineDescription _current;
   
-  static Line calculateMaximums(const Line& description, size_t size);
+  static LineDescription calculateMaximums(const LineDescription& description, size_t size);
   
   bool reset(size_t startIndex);
 
 public:
-  LineEnumeratorState(const Line& description, size_t size, size_t lowestCell) :
+  LineEnumeratorState(const LineDescription& description, size_t size, size_t lowestCell) :
     _description(description),
     _max(calculateMaximums(_description, size)),
     _current(_description.size())
@@ -122,10 +151,10 @@ public:
   void next(size_t i, LineVector& result);
 };
 
-Line LineEnumeratorState::calculateMaximums(const Line& description, size_t size)
+LineDescription LineEnumeratorState::calculateMaximums(const LineDescription& description, size_t size)
 {
   size_t count = description.size();
-  Line maximums(count);
+  LineDescription maximums(count);
 
   while (count--) {
     if (description[count] > size)
@@ -158,10 +187,10 @@ void LineEnumeratorState::next(size_t i, LineVector& result)
   }
 }
 
-LineVector enumerateLine(const Line& description, size_t size, size_t lowestCell)
+std::vector<LineColoring> enumerateColorings(const LineDescription& description, size_t size)
 {
   LineVector result;
-  LineEnumeratorState state(description, size, lowestCell);
+  LineEnumeratorState state(description, size, 0);
   state.next(0, result);
   return result;
 }
