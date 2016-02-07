@@ -7,12 +7,11 @@ using namespace nonogram;
 
 static void test_enumerate()
 {
-  Line line{1,1};
-  auto e = enumerateLine(line, 5, 0);
+  LineDescription line{2,1};
+  auto e = enumerateColorings(line, 5);
   
   for (const auto& l : e) {
-    for (auto v : l) std::cout << v << ' ';
-    std::cout << '\n';
+    std::cout << l << '\n';
   }
 }
 
@@ -45,7 +44,7 @@ static void test_grid()
 
 int main(int argc, char** argv)
 {
-  test_grid();
+  test_enumerate();
   return 0;
 }
 
