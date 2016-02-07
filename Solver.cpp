@@ -83,6 +83,8 @@ bool RowAgent::next()
   return false;
 }
 
+//! Try to place blocks of the current coloring.  Returns the index of the first
+//! block that could not be placed; or size() of the coloring on success.
 size_t RowAgent::placeBlocks()
 {
   using std::get;
@@ -111,5 +113,11 @@ bailout:
   return block;
 }
 
+//! Skip to the next coloring NOT containing the block equal to that with invalidBlock
+//! index in the current coloring.
+void RowAgent::skipColorings(size_t invalidBlock)
+{
+
+}
 
 }
