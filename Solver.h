@@ -8,7 +8,8 @@ namespace nonogram
 
 namespace signals = boost::signals2;
 
-//! Grid abstraction; contains convenience methods to return rows and columns as ranges.
+//! Grid abstraction; contains convenience methods to return rows and columns as
+//! mutable random-access ranges.
 class Grid
 {
 public:
@@ -53,26 +54,53 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 
-
-struct and_combiner
+//! Verifies whether RowAgent's placement of the cell is consistent with column description.
+class ColumnAgent
 {
-  typedef bool result_type;
+  const Line& _description;
+  const size_t _lineSize;
+  std::vector<Block> _blocks;
 
-  template<typename It>
-  bool operator()(It begin, It end) const
-  {
-    while (begin != end)
-    if (!*begin++)
-      return false;
-    return true;
-  }
+public:
+  Agent(const Line& description, size_t lineSize) :
+    _description(description), _lineSize(lineSize)
+  { }
+
+  bool setCell(size_t pos);
+  void clearCell(size_t pos);
 };
 
-using LineChangedSignal = signals::signal_type<
-        bool(size_t),
-        signals::keywords::combiner_type<and_combiner>,
-        signals::keywords::mutex_type<signals::dummy_mutex>>::type;
+/////////////////////////////////////////////////////////////////////////////
 
+class RowAgent
+{
+  struct and_combiner
+  {
+    typedef bool result_type;
+
+    template<typename It>
+    bool operator()(It begin, It end) const
+    {
+      while (begin != end)
+      if (!*begin++)
+        return false;
+      return true;
+    }
+  };
+  
+  using CellSetSignal = signals::signal_type<
+          bool(size_t),
+          signals::keywords::combiner_type<and_combiner>,
+          signals::keywords::mutex_type<signals::dummy_mutex>>::type;
+  
+  using CellClearedSignal = signals::signal_type<
+          void(size_t),
+          signals::keywords::mutex_type<signals::dummy_mutex>>::type;
+  
+public:
+  CellSetSignal cellSetSignal;
+  CellClearedSignal cellClearedSignal;
+};
 
 
 }
