@@ -1,12 +1,10 @@
 #pragma once
+#include <memory>
 #include <boost/range/adaptors.hpp>
-#include <boost/signals2.hpp>
 #include "Representation.h"
 
 namespace nonogram
 {
-
-namespace signals = boost::signals2;
 
 //! Grid abstraction; contains convenience methods to return rows and columns as
 //! mutable random-access ranges.
@@ -57,13 +55,16 @@ private:
 //! Verifies whether RowAgent's placement of the cell is consistent with column description.
 class ColumnAgent
 {
+  const size_t _column;
   const LineDescription& _description;
   const size_t _lineSize;
   std::vector<Block> _blocks;
 
 public:
-  ColumnAgent(const LineDescription& description, size_t lineSize) :
-    _description(description), _lineSize(lineSize)
+  using PtrVector = std::vector<std::unique_ptr<ColumnAgent>>;
+  
+  ColumnAgent(size_t column, const LineDescription& description, size_t lineSize) :
+    _column(column), _description(description), _lineSize(lineSize)
   { }
 
   bool setCell(size_t pos);
@@ -72,34 +73,88 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
+//! Tries all line colorings consistent with column descriptions.
 class RowAgent
 {
-  struct and_combiner
+  const size_t _row;
+  const std::vector<LineColoring> _enumeratedColorings;
+  const ColumnAgent::PtrVector& _columnAgents;
+  std::vector<LineColoring>::const_iterator _coloring;
+  
+  class CellPlacer
   {
-    typedef bool result_type;
-
-    template<typename It>
-    bool operator()(It begin, It end) const
+    ColumnAgent *_columnAgent;
+    size_t _row;
+    bool _rollback;
+    bool _placed;
+    
+    void assign(const CellPlacer& other)
     {
-      while (begin != end)
-      if (!*begin++)
-        return false;
-      return true;
+      _columnAgent = other._columnAgent;
+      _row = other._row;
+      _rollback = other._rollback;
+      _placed = other._placed;
+    }
+    
+  public:
+    CellPlacer(ColumnAgent* columnAgent, size_t row) :
+      _columnAgent(columnAgent), _row(row), _rollback(true), _placed(_columnAgent->setCell(_row))
+    { }
+    
+    ~CellPlacer()
+    {
+      if (_rollback)
+        _columnAgent->clearCell(_row);
+    }
+    
+    operator bool() const
+    {
+      return _placed;
+    }
+    
+    void commit()
+    {
+      _rollback = false;
+    }
+    
+    CellPlacer(const CellPlacer&) = delete;
+    CellPlacer& operator=(const CellPlacer&) = delete;
+    
+    CellPlacer(CellPlacer&& other)
+    {
+      assign(other);
+      other._rollback = false;
+    }
+    
+    CellPlacer& operator=(CellPlacer&& other)
+    {
+      assign(other);
+      other._rollback = false;
+      return *this;
     }
   };
   
-  using CellSetSignal = signals::signal_type<
-          bool(size_t),
-          signals::keywords::combiner_type<and_combiner>,
-          signals::keywords::mutex_type<signals::dummy_mutex>>::type;
-  
-  using CellClearedSignal = signals::signal_type<
-          void(size_t),
-          signals::keywords::mutex_type<signals::dummy_mutex>>::type;
+  size_t placeBlocks();
+  void skipColorings(size_t invalidBlock);
   
 public:
-  CellSetSignal cellSetSignal;
-  CellClearedSignal cellClearedSignal;
+  RowAgent(size_t row, std::vector<LineColoring>&& enumeratedColorings, const ColumnAgent::PtrVector& columnAgents) :
+    _row(row), _enumeratedColorings(std::move(enumeratedColorings)), _columnAgents(columnAgents)
+  {
+    reset();
+  }
+    
+  void reset()
+  {
+    _coloring = _enumeratedColorings.begin();
+  }
+  
+  const LineColoring& coloring() const
+  {
+    return *_coloring;
+  }
+  
+  bool next();
 };
 
 

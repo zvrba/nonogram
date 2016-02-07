@@ -66,6 +66,50 @@ void ColumnAgent::clearCell(size_t pos)
 
 /////////////////////////////////////////////////////////////////////////////
 
+//! Generate next valid line coloring.
+bool RowAgent::next()
+{
+  if (_coloring == _enumeratedColorings.end())
+    return false;
+  if (_coloring != _enumeratedColorings.begin())
+    ++_coloring;
+  
+  while(true) {
+    size_t invalidBlock = placeBlocks();
+    if (invalidBlock == _coloring->size())
+      return true;
+    skipColorings(invalidBlock);
+  }
+  return false;
+}
+
+size_t RowAgent::placeBlocks()
+{
+  using std::get;
+  
+  const LineColoring& coloring = *_coloring;
+  
+  std::vector<CellPlacer> placedCells;
+  size_t block;
+  
+  for (block = 0; block < coloring.size(); ++block) {
+    size_t blockBegin = get<0>(coloring[block]);
+    size_t blockEnd = get<1>(coloring[block]);
+    
+    for (; blockBegin < blockEnd; ++blockBegin) {
+      placedCells.push_back(CellPlacer(_columnAgents[blockBegin].get(), _row));
+      if (!placedCells.back())
+        goto bailout;
+    }
+  }
+  
+bailout:
+  if (block == coloring.size())
+  for (auto& p : placedCells)
+    p.commit();
+  
+  return block;
+}
 
 
 }
