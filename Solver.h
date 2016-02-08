@@ -90,12 +90,22 @@ class RowAgent
       _columnAgent(columnAgent), _row(row), _rollback(true), _placed(_columnAgent.setCell(_row))
     { }
     
+    CellPlacer(CellPlacer&& other) :
+      _columnAgent(other._columnAgent), _row(other._row), _rollback(other._rollback), _placed(other._placed)
+    {
+      other._rollback = false;
+    }
+
     ~CellPlacer()
     {
       if (_rollback)
         _columnAgent.clearCell(_row);
     }
     
+    CellPlacer(const CellPlacer&) = delete;
+    CellPlacer& operator=(const CellPlacer&) = delete;
+    CellPlacer& operator=(CellPlacer&&) = delete;
+
     operator bool() const
     {
       return _placed;
@@ -105,23 +115,13 @@ class RowAgent
     {
       _rollback = false;
     }
-    
-    CellPlacer(const CellPlacer&) = delete;
-    CellPlacer& operator=(const CellPlacer&) = delete;
-    CellPlacer& operator=(CellPlacer&&) = delete;
-    
-    CellPlacer(CellPlacer&& other) :
-      _columnAgent(other._columnAgent), _row(other._row), _rollback(other._rollback), _placed(other._placed)
-    {
-      other._rollback = false;
-    }
   };
   
   size_t placeBlocks();
   void skipColorings(size_t invalidBlock);
   
 public:
-  RowAgent(size_t row, std::vector<LineColoring>&& enumeratedColorings, std::vector<ColumnAgent>& columnAgents) :
+  RowAgent(size_t row, const std::vector<LineColoring>& enumeratedColorings, std::vector<ColumnAgent>& columnAgents) :
     _row(row), _enumeratedColorings(std::move(enumeratedColorings)), _columnAgents(columnAgents)
   {
     reset();
@@ -144,10 +144,26 @@ public:
 
 class Solver
 {
+public:
+  //! Solution is a vector of row colorings.
+  using Solution = std::vector<LineColoring>;
+  
+private:
   const Description& _description;
+  std::vector<Solution>& _solutions;
+  std::vector<ColumnAgent> _columnAgents;
+  std::vector<RowAgent> _rowAgents;
+  
+  void buildAgents();
   
 public:
-  Solver(const Description&);
+  Solver(const Description& description, std::vector<Solution>& solutions) :
+    _description(description), _solutions(solutions)
+  {
+    buildAgents();
+  }
+  
+  void solve();
 };
 
 }

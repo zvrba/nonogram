@@ -127,4 +127,16 @@ void RowAgent::skipColorings(size_t invalidBlock)
     break;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+void Solver::buildAgents()
+{
+  for (size_t i = 0; i < _description.width(); ++i)
+    _columnAgents.push_back(ColumnAgent(i, _description.columns[i], _description.height()));
+  for (size_t i = 0; i < _description.height(); ++i) {
+    auto rowColorings = enumerateColorings(_description.rows[i], _description.width());
+    _rowAgents.push_back(RowAgent(i, rowColorings, _columnAgents));
+  }
+}
+
 }
