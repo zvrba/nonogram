@@ -107,7 +107,7 @@ std::istream& operator>>(std::istream& is, Description &d)
 /////////////////////////////////////////////////////////////////////////////
 
 template<typename It>
-struct LineColoringFormatter : karma::grammar<It, LineColoring(), karma::ascii::space_type>
+struct LineColoringFormatter : karma::grammar<It, LineColoring()>
 {
   LineColoringFormatter() : LineColoringFormatter::base_type(start)
   {
@@ -115,8 +115,8 @@ struct LineColoringFormatter : karma::grammar<It, LineColoring(), karma::ascii::
     block = lit('[') << ulong_ << lit('-') << ulong_ << lit(')');
   }
   
-  karma::rule<It, LineColoring(), karma::ascii::space_type> start;
-  karma::rule<It, Block(), karma::ascii::space_type> block;
+  karma::rule<It, LineColoring()> start;
+  karma::rule<It, Block()> block;
 };
 
 std::ostream& operator<<(std::ostream& os, const LineColoring& coloring)
@@ -126,7 +126,7 @@ std::ostream& operator<<(std::ostream& os, const LineColoring& coloring)
   
   static LineColoringFormatter<ostream_iterator> formatter;
 
-  os << karma::format_delimited(formatter, space, coloring);
+  os << karma::format(formatter, coloring);
   return os;
 }
 
