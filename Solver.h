@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include <boost/range/adaptors.hpp>
 #include "Representation.h"
 
@@ -61,8 +60,6 @@ class ColumnAgent
   std::vector<Block> _blocks;
 
 public:
-  using PtrVector = std::vector<std::unique_ptr<ColumnAgent>>;
-  
   ColumnAgent(size_t column, const LineDescription& description, size_t lineSize) :
     _column(column), _description(description), _lineSize(lineSize)
   { }
@@ -78,33 +75,25 @@ class RowAgent
 {
   const size_t _row;
   const std::vector<LineColoring> _enumeratedColorings;
-  const ColumnAgent::PtrVector& _columnAgents;
+  std::vector<ColumnAgent>& _columnAgents;
   std::vector<LineColoring>::const_iterator _coloring;
   
   class CellPlacer
   {
-    ColumnAgent *_columnAgent;
+    ColumnAgent& _columnAgent;
     size_t _row;
     bool _rollback;
     bool _placed;
     
-    void assign(const CellPlacer& other)
-    {
-      _columnAgent = other._columnAgent;
-      _row = other._row;
-      _rollback = other._rollback;
-      _placed = other._placed;
-    }
-    
   public:
-    CellPlacer(ColumnAgent* columnAgent, size_t row) :
-      _columnAgent(columnAgent), _row(row), _rollback(true), _placed(_columnAgent->setCell(_row))
+    CellPlacer(ColumnAgent& columnAgent, size_t row) :
+      _columnAgent(columnAgent), _row(row), _rollback(true), _placed(_columnAgent.setCell(_row))
     { }
     
     ~CellPlacer()
     {
       if (_rollback)
-        _columnAgent->clearCell(_row);
+        _columnAgent.clearCell(_row);
     }
     
     operator bool() const
@@ -119,18 +108,12 @@ class RowAgent
     
     CellPlacer(const CellPlacer&) = delete;
     CellPlacer& operator=(const CellPlacer&) = delete;
+    CellPlacer& operator=(CellPlacer&&) = delete;
     
-    CellPlacer(CellPlacer&& other)
+    CellPlacer(CellPlacer&& other) :
+      _columnAgent(other._columnAgent), _row(other._row), _rollback(other._rollback), _placed(other._placed)
     {
-      assign(other);
       other._rollback = false;
-    }
-    
-    CellPlacer& operator=(CellPlacer&& other)
-    {
-      assign(other);
-      other._rollback = false;
-      return *this;
     }
   };
   
@@ -138,7 +121,7 @@ class RowAgent
   void skipColorings(size_t invalidBlock);
   
 public:
-  RowAgent(size_t row, std::vector<LineColoring>&& enumeratedColorings, const ColumnAgent::PtrVector& columnAgents) :
+  RowAgent(size_t row, std::vector<LineColoring>&& enumeratedColorings, std::vector<ColumnAgent>& columnAgents) :
     _row(row), _enumeratedColorings(std::move(enumeratedColorings)), _columnAgents(columnAgents)
   {
     reset();
@@ -157,5 +140,14 @@ public:
   bool next();
 };
 
+/////////////////////////////////////////////////////////////////////////////
+
+class Solver
+{
+  const Description& _description;
+  
+public:
+  Solver(const Description&);
+};
 
 }

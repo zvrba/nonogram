@@ -1,3 +1,4 @@
+#include <boost/range/algorithm.hpp>
 #include "Solver.h"
 
 namespace nonogram
@@ -69,12 +70,15 @@ void ColumnAgent::clearCell(size_t pos)
 //! Generate next valid line coloring.
 bool RowAgent::next()
 {
+  if (_enumeratedColorings.empty())
+    return true;
   if (_coloring == _enumeratedColorings.end())
     return false;
+
   if (_coloring != _enumeratedColorings.begin())
     ++_coloring;
   
-  while(true) {
+  while(_coloring != _enumeratedColorings.end()) {
     size_t invalidBlock = placeBlocks();
     if (invalidBlock == _coloring->size())
       return true;
@@ -99,7 +103,7 @@ size_t RowAgent::placeBlocks()
     size_t blockEnd = get<1>(coloring[block]);
     
     for (; blockBegin < blockEnd; ++blockBegin) {
-      placedCells.push_back(CellPlacer(_columnAgents[blockBegin].get(), _row));
+      placedCells.push_back(CellPlacer(_columnAgents[blockBegin], _row));
       if (!placedCells.back())
         goto bailout;
     }
@@ -114,10 +118,13 @@ bailout:
 }
 
 //! Skip to the next coloring NOT containing the block equal to that with invalidBlock
-//! index in the current coloring.
+//! index in the current coloring.  Colorings are sorted lexicographically.
 void RowAgent::skipColorings(size_t invalidBlock)
 {
-
+  const Block block = (*_coloring)[invalidBlock];
+  for (; _coloring != _enumeratedColorings.end(); ++_coloring)
+  if (boost::find(*_coloring, block) == boost::end(*_coloring))
+    break;
 }
 
 }
