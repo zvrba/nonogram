@@ -139,4 +139,21 @@ void Solver::buildAgents()
   }
 }
 
+void Solver::solve(size_t i, std::vector<Solution>& solutions)
+{
+  if (i == _rowAgents.size()) {
+    Solution solution;
+    for (const auto& a : _rowAgents)
+      solution.push_back(a.coloring());
+    solutions.push_back(solution);
+    return;
+  }
+  
+  while (_rowAgents[i].next())
+    solve(i+1, solutions);
+  
+  for (; i < _rowAgents.size(); ++i)
+    _rowAgents[i].reset();
+}
+
 }
