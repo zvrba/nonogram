@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "Representation.h"
+#include <fstream>
 #include "Solver.h"
 
 using namespace nonogram;
@@ -44,7 +44,25 @@ static void test_grid()
 
 int main(int argc, char** argv)
 {
-  test_enumerate();
+  try {
+    if (argc != 2)
+      throw std::runtime_error("input file argument missing");
+
+    std::ifstream ifs(argv[1]);
+    if (!ifs)
+      throw std::runtime_error("cannot open file");
+    
+    Description d;
+    if (!(ifs >> d))
+      throw std::runtime_error("cannot parse input file");
+    
+    std::vector<Solver::Solution> solutions;
+    Solver solver(d, solutions);
+    std::cout << "found " << solutions.size() << " solutions\n";
+  } catch (std::exception& err) {
+    std::cerr << "ERROR: " << err.what();
+    return 1;
+  }
   return 0;
 }
 

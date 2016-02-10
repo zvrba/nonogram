@@ -155,7 +155,7 @@ private:
   std::vector<RowAgent> _rowAgents;
   
   void buildAgents();
-  void solve(size_t i, std::vector<Solution>& solutions);
+  void solve(size_t i);
   
 public:
   Solver(const Description& description, std::vector<Solution>& solutions) :
@@ -164,9 +164,9 @@ public:
     buildAgents();
   }
   
-  void solve(std::vector<Solution>& solutions)
+  void solve()
   {
-    solve(0, solutions);
+    solve(0);
   }
 };
 
