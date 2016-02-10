@@ -58,6 +58,7 @@ int main(int argc, char** argv)
     
     std::vector<Solver::Solution> solutions;
     Solver solver(d, solutions);
+    solver.solve();
     std::cout << "found " << solutions.size() << " solutions\n";
   } catch (std::exception& err) {
     std::cerr << "ERROR: " << err.what();
