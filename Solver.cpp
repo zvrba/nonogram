@@ -110,6 +110,8 @@ size_t RowAgent::placeBlocks()
   }
   
 bailout:
+  std::cout << "ROW " << _row << " TRY: " << coloring << "; " << (block == coloring.size()) << '\n';
+
   if (block == coloring.size())
   for (auto& p : placedCells)
     p.commit();

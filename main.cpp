@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     solver.solve();
     std::cout << "found " << solutions.size() << " solutions\n";
   } catch (std::exception& err) {
-    std::cerr << "ERROR: " << err.what();
+    std::cerr << "ERROR: " << err.what() << '\n';
     return 1;
   }
   return 0;
