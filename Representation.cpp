@@ -185,7 +185,10 @@ void LineEnumeratorState::next(size_t i, std::vector<LineColoring>& result)
   if (i == _description.size()) {
     LineColoring coloring;
     transform(_current | indexed(), std::inserter(coloring, coloring.end()),
-      [this](const auto& e) { return Block(e.value(), _description[e.index()]); });
+      [this](const auto& e) {
+        auto size = _description[e.index()];
+        return Block(e.value(), e.value()+size);
+      });
     result.push_back(coloring);
     return;
   }
