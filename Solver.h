@@ -122,7 +122,7 @@ class RowAgent
   
 public:
   RowAgent(size_t row, const std::vector<LineColoring>& enumeratedColorings, std::vector<ColumnAgent>& columnAgents) :
-    _row(row), _enumeratedColorings(std::move(enumeratedColorings)), _columnAgents(columnAgents)
+    _row(row), _enumeratedColorings(enumeratedColorings), _columnAgents(columnAgents)
   {
     reset();
   }
