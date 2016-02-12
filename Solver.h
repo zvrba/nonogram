@@ -76,7 +76,7 @@ class RowAgent
   const size_t _row;
   const std::vector<LineColoring> _enumeratedColorings;
   std::vector<ColumnAgent>& _columnAgents;
-  std::vector<LineColoring>::const_iterator _coloring;
+  size_t _coloring;
   
   class CellPlacer
   {
@@ -129,12 +129,12 @@ public:
     
   void reset()
   {
-    _coloring = _enumeratedColorings.begin();
+    _coloring = static_cast<size_t>(-1);
   }
   
   const LineColoring& coloring() const
   {
-    return *_coloring;
+    return _enumeratedColorings[_coloring];
   }
   
   bool next();

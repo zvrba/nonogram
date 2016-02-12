@@ -72,15 +72,14 @@ bool RowAgent::next()
 {
   if (_enumeratedColorings.empty())
     return true;
-  if (_coloring == _enumeratedColorings.end())
+  if (_coloring == _enumeratedColorings.size())
     return false;
 
-  if (_coloring != _enumeratedColorings.begin())
-    ++_coloring;
+  ++_coloring;
   
-  while(_coloring != _enumeratedColorings.end()) {
+  while(_coloring != _enumeratedColorings.size()) {
     size_t invalidBlock = placeBlocks();
-    if (invalidBlock == _coloring->size())
+    if (invalidBlock == coloring().size())
       return true;
     skipColorings(invalidBlock);
   }
@@ -93,14 +92,12 @@ size_t RowAgent::placeBlocks()
 {
   using std::get;
   
-  const LineColoring& coloring = *_coloring;
-  
   std::vector<CellPlacer> placedCells;
   size_t block;
   
-  for (block = 0; block < coloring.size(); ++block) {
-    size_t blockBegin = get<0>(coloring[block]);
-    size_t blockEnd = get<1>(coloring[block]);
+  for (block = 0; block < coloring().size(); ++block) {
+    size_t blockBegin = get<0>(coloring()[block]);
+    size_t blockEnd = get<1>(coloring()[block]);
     
     for (; blockBegin < blockEnd; ++blockBegin) {
       placedCells.push_back(CellPlacer(_columnAgents[blockBegin], _row));
@@ -110,9 +107,9 @@ size_t RowAgent::placeBlocks()
   }
   
 bailout:
-  std::cout << "ROW " << _row << " TRY: " << coloring << "; " << (block == coloring.size()) << '\n';
+  std::cout << "ROW " << _row << " TRY: " << coloring() << "; " << (block == coloring().size()) << '\n';
 
-  if (block == coloring.size())
+  if (block == coloring().size())
   for (auto& p : placedCells)
     p.commit();
   
@@ -123,9 +120,9 @@ bailout:
 //! index in the current coloring.  Colorings are sorted lexicographically.
 void RowAgent::skipColorings(size_t invalidBlock)
 {
-  const Block block = (*_coloring)[invalidBlock];
-  for (; _coloring != _enumeratedColorings.end(); ++_coloring)
-  if (boost::find(*_coloring, block) == boost::end(*_coloring))
+  const Block block = coloring()[invalidBlock];
+  for (; _coloring != _enumeratedColorings.size(); ++_coloring)
+  if (boost::find(coloring(), block) == boost::end(coloring()))
     break;
 }
 
