@@ -25,7 +25,7 @@ bool ColumnAgent::setCell(size_t pos)
 
     if (blockEnd - blockBegin > _description[lastBlockIndex])
       throw std::logic_error("Agent::setCell: too long block");
-    if (pos < blockEnd)
+    if (pos < blockEnd-1)
       throw std::logic_error("Agent::setCell: going backwards");
 
     // Extending last block if possible.

@@ -98,7 +98,7 @@ class RowAgent
 
     ~CellPlacer()
     {
-      if (_rollback)
+      if (_rollback && _placed)
         _columnAgent.clearCell(_row);
     }
     
