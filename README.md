@@ -2,3 +2,5 @@ A primitive nonogram solver; a solution to this reddit challenge: https://www.re
 
 It successfully solves the challenge examples (in `inputs/{1,2,3}.txt`) but is
 too slow to solve the example from wikipedia (in `inputs/4.txt`).
+
+Note: this is a Netbeans project; no Makefile is provided.
