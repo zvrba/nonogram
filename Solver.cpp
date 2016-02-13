@@ -76,9 +76,9 @@ bool RowAgent::next()
     return false;
 
   ++_coloring;
-  _placedCells.clear();
   
   while(_coloring != _enumeratedColorings.size()) {
+    _placedCells.clear();
     size_t invalidBlock = placeBlocks();
     if (invalidBlock == coloring().size())
       return true;
@@ -104,7 +104,8 @@ size_t RowAgent::placeBlocks()
   using std::get;
   size_t block;
   
-  std::cout << "ROW " << _row << " TRY: " << coloring() << "\n";
+  //static size_t attempt = 0;
+  //std::cout << std::setw(4) << attempt++ << " ROW " << _row << " TRY: " << coloring() << "\n";
 
   for (block = 0; block < coloring().size(); ++block) {
     size_t blockBegin = get<0>(coloring()[block]);
